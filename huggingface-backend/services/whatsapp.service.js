@@ -20,18 +20,8 @@ const SESSION_ID      = process.env.WA_SESSION_ID    || 'whatsapp-crm-default';
 const AUTO_RESTART    = process.env.WA_AUTO_RESTART  !== 'false';
 const HEALTH_INTERVAL = parseInt(process.env.WA_HEALTH_CHECK_INTERVAL || '30000', 10);
 
-// Use Puppeteer's bundled Chromium if no path explicitly set
-const _getChromiumPath = () => {
-  if (process.env.PUPPETEER_EXECUTABLE_PATH) return process.env.PUPPETEER_EXECUTABLE_PATH;
-  try {
-    // Puppeteer bundled Chromium path
-    const puppeteer = require('puppeteer');
-    return puppeteer.executablePath();
-  } catch (_) {
-    return '/usr/bin/chromium';
-  }
-};
-const CHROMIUM_PATH = _getChromiumPath();
+// Use system chromium installed via apt in Dockerfile
+const CHROMIUM_PATH   = process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium';
 
 // ── State ─────────────────────────────────────────────────────
 let client          = null;
