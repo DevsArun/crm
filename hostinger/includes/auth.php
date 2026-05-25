@@ -83,9 +83,15 @@ function attemptLogin(string $username, string $password): array
     $ip       = getClientIp();
     $lockKey  = 'login_fail_' . md5($ip);
 
-    // Brute-force check
+    // Brute-force check — stored in session
     $attempts = (int)($_SESSION[$lockKey . '_count'] ?? 0);
     $lockTime = (int)($_SESSION[$lockKey . '_time']  ?? 0);
+
+    // Auto-clear lockout if enough time has passed (even in same session)
+    if ($attempts >= MAX_LOGIN_ATTEMPTS && (time() - $lockTime) >= LOGIN_LOCKOUT_TIME) {
+        unset($_SESSION[$lockKey . '_count'], $_SESSION[$lockKey . '_time']);
+        $attempts = 0;
+    }
 
     if ($attempts >= MAX_LOGIN_ATTEMPTS && (time() - $lockTime) < LOGIN_LOCKOUT_TIME) {
         $remaining = LOGIN_LOCKOUT_TIME - (time() - $lockTime);

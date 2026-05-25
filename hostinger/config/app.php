@@ -89,8 +89,8 @@ define('ASSETS_PATH',   ROOT_PATH . '/assets');
 
 // ── Security ──────────────────────────────────────────────────
 define('CSRF_TOKEN_TTL', 3600);    // CSRF token lifetime (seconds)
-define('MAX_LOGIN_ATTEMPTS', 5);   // Before temporary lockout
-define('LOGIN_LOCKOUT_TIME', 900); // seconds (15 min)
+define('MAX_LOGIN_ATTEMPTS', 10);  // Before temporary lockout
+define('LOGIN_LOCKOUT_TIME', 120); // seconds (2 min — not 15!)
 
 // ── Feature flags ─────────────────────────────────────────────
 define('FEATURE_AI_GENERATION', true);
