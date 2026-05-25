@@ -1,0 +1,153 @@
+# ============================================================
+# WhatsApp CRM OS — Apache .htaccess
+# Security, routing, CORS, caching, compression
+# Optimized for Hostinger shared hosting
+# ============================================================
+
+Options -Indexes
+Options -MultiViews
+
+# ── Enable Rewrite Engine ─────────────────────────────────────
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # ── Force HTTPS ───────────────────────────────────────────
+    RewriteCond %{HTTPS} off
+    RewriteCond %{HTTP_HOST} !^localhost [NC]
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # ── Redirect root to dashboard ────────────────────────────
+    RewriteRule ^$ dashboard.php [L]
+
+    # ── Block direct access to sensitive directories ──────────
+    RewriteRule ^(config|includes|scripts|logs|uploads)/(.*)$ - [F,L]
+
+    # ── Allow direct access to api/ endpoints ─────────────────
+    RewriteRule ^api/(.*)$ api/$1 [L]
+
+    # ── Allow access to assets ────────────────────────────────
+    RewriteRule ^assets/(.*)$ assets/$1 [L]
+</IfModule>
+
+# ── Security Headers ──────────────────────────────────────────
+<IfModule mod_headers.c>
+    # Prevent clickjacking
+    Header always set X-Frame-Options "SAMEORIGIN"
+
+    # Prevent MIME sniffing
+    Header always set X-Content-Type-Options "nosniff"
+
+    # XSS Protection
+    Header always set X-XSS-Protection "1; mode=block"
+
+    # Referrer policy
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # Permissions policy
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+
+    # Content Security Policy
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com https://cdn.socket.io; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' wss: https:;"
+
+    # Remove server signature
+    Header unset Server
+    Header unset X-Powered-By
+
+    # CORS for API endpoints (restricted to same origin + configured HF URL)
+    <FilesMatch "\.(php)$">
+        Header set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+        Header set Access-Control-Allow-Headers "Content-Type, X-Requested-With"
+        Header set Access-Control-Max-Age "3600"
+    </FilesMatch>
+</IfModule>
+
+# ── Block access to sensitive files ──────────────────────────
+<FilesMatch "(\.env|\.git|composer\.(json|lock)|package\.json|package-lock\.json|webpack\.config|\.htpasswd|\.DS_Store|README\.md)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# ── Block PHP execution in uploads directory ──────────────────
+<IfModule mod_rewrite.c>
+    RewriteRule ^uploads/.*\.(php|php3|php4|php5|phtml|pl|py|jsp|asp|sh|cgi)$ - [F,NC,L]
+</IfModule>
+
+# ── Block access to log files ─────────────────────────────────
+<FilesMatch "\.log$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# ── PHP settings (Hostinger shared hosting) ───────────────────
+<IfModule mod_php.c>
+    php_value upload_max_filesize 10M
+    php_value post_max_size 10M
+    php_value max_execution_time 120
+    php_value max_input_time 120
+    php_value memory_limit 256M
+    php_flag display_errors Off
+    php_flag log_errors On
+    php_value session.cookie_httponly 1
+    php_value session.use_strict_mode 1
+    php_value session.cookie_samesite Lax
+</IfModule>
+
+# ── Compression ───────────────────────────────────────────────
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css
+    AddOutputFilterByType DEFLATE application/javascript application/json
+    AddOutputFilterByType DEFLATE application/x-javascript text/javascript
+</IfModule>
+
+# ── Browser Caching ───────────────────────────────────────────
+<IfModule mod_expires.c>
+    ExpiresActive On
+
+    # CSS/JS — cache 7 days
+    ExpiresByType text/css                  "access plus 7 days"
+    ExpiresByType application/javascript    "access plus 7 days"
+    ExpiresByType text/javascript           "access plus 7 days"
+
+    # Images — cache 30 days
+    ExpiresByType image/png                 "access plus 30 days"
+    ExpiresByType image/jpeg                "access plus 30 days"
+    ExpiresByType image/gif                 "access plus 30 days"
+    ExpiresByType image/svg+xml             "access plus 30 days"
+    ExpiresByType image/x-icon             "access plus 30 days"
+    ExpiresByType image/webp                "access plus 30 days"
+
+    # Fonts — cache 30 days
+    ExpiresByType font/woff                 "access plus 30 days"
+    ExpiresByType font/woff2                "access plus 30 days"
+    ExpiresByType application/font-woff     "access plus 30 days"
+
+    # PHP files — no cache
+    ExpiresByType text/html                 "access plus 0 seconds"
+    ExpiresByType application/json          "access plus 0 seconds"
+</IfModule>
+
+# ── Disable ETags ─────────────────────────────────────────────
+<IfModule mod_headers.c>
+    Header unset ETag
+</IfModule>
+FileETag None
+
+# ── Protect webhook endpoint: only accept POST ─────────────────
+# (handled in webhook.php itself, but belt-and-suspenders)
+<Files "webhook.php">
+    <LimitExcept POST>
+        Order allow,deny
+        Deny from all
+    </LimitExcept>
+</Files>
+
+# ── Custom error pages ────────────────────────────────────────
+ErrorDocument 403 /index.php
+ErrorDocument 404 /index.php
+ErrorDocument 500 /index.php
+
+# ── Disable directory listing ─────────────────────────────────
+<IfModule mod_autoindex.c>
+    Options -Indexes
+</IfModule>
