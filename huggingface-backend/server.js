@@ -24,7 +24,9 @@ const queueService   = require('./services/queue.service');
 const webhookService = require('./services/webhook.service');
 
 // ── Config ────────────────────────────────────────────────────
+// HF Spaces injects PORT env var — always use it, fallback to 7860
 const PORT       = parseInt(process.env.PORT || '7860', 10);
+const HOST       = '0.0.0.0'; // Must bind to all interfaces on HF
 const NODE_ENV   = process.env.NODE_ENV  || 'production';
 const API_KEY    = process.env.NODE_API_KEY || '';
 
@@ -360,12 +362,13 @@ const start = async () => {
     logger.info('Socket.io initialized', { source: 'startup' });
 
     // ── Start HTTP server ──────────────────────────────────
-    server.listen(PORT, '0.0.0.0', () => {
+    server.listen(PORT, HOST, () => {
       logger.info(`WhatsApp CRM Engine running`, {
         source: 'startup',
         port:   PORT,
+        host:   HOST,
         env:    NODE_ENV,
-        url:    `http://0.0.0.0:${PORT}`,
+        url:    `http://${HOST}:${PORT}`,
       });
     });
 

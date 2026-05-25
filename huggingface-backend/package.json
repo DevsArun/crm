@@ -1,7 +1,7 @@
 {
   "name": "whatsapp-crm-engine",
   "version": "1.0.0",
-  "description": "WhatsApp CRM Engine - Node.js backend for Hugging Face Spaces",
+  "description": "WhatsApp CRM Engine for Hugging Face Spaces",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -24,7 +24,6 @@
     "qrcode": "^1.5.3",
     "winston": "^3.11.0",
     "winston-daily-rotate-file": "^4.7.1",
-    "node-cron": "^3.0.3",
     "compression": "^1.7.4"
   }
 }

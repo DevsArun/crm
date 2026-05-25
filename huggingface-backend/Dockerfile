@@ -1,41 +1,35 @@
 # ============================================================
 # WhatsApp CRM Engine — Hugging Face Spaces
-# node:18-bullseye has chromium available via apt
 # ============================================================
+FROM node:18-slim
 
-FROM node:18-bullseye-slim
+ENV DEBIAN_FRONTEND=noninteractive
 
-ENV DEBIAN_FRONTEND=noninteractive \
-    PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
-    NODE_ENV=production
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    chromium \
-    ca-certificates \
-    fonts-liberation \
-    libgbm1 \
-    libnss3 \
-    libatk-bridge2.0-0 \
-    libgtk-3-0 \
-    libxss1 \
-    libasound2 \
+# Install System Chromium via apt-get
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        chromium \
+        ca-certificates \
+        fonts-liberation \
+        wget \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
+# Tell Puppeteer to use system Chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+ENV NODE_ENV=production
 
-RUN mkdir -p wa_session logs tmp
+WORKDIR /app
+RUN mkdir -p /app/wa_session /app/logs /app/tmp
 
 COPY package*.json ./
 
-RUN npm ci --only=production --ignore-scripts && npm cache clean --force
+RUN npm install --omit=dev && npm cache clean --force
 
 COPY . .
 
 RUN chown -R node:node /app
-
 USER node
 
 EXPOSE 7860
-
 CMD ["node", "server.js"]
