@@ -34,7 +34,7 @@ INSERT INTO `settings` (`setting_key`, `setting_value`, `setting_type`, `label`,
 ('webhook_ip_whitelist','',                                     'string',  'Webhook IP Whitelist (CSV)','security'),
 ('session_timeout',     '3600',                                 'integer', 'Session Timeout (seconds)', 'security'),
 ('admin_username',      'admin',                                'string',  'Admin Username',            'security'),
-('admin_password',      '$2y$10$defaultHashToBeChangedOnSetup', 'string',  'Admin Password (hashed)',   'security'),
+('admin_password',      '$2y$10$ws8gfhEA4./n8akUWqfA6.cJzi8x0so3D2u7JBYZii7nuHzrSkGKa', 'string',  'Admin Password (hashed)',   'security'),
 
 -- Feature Flags
 ('feature_ai_generation','1',                                   'boolean', 'Enable AI Message Generation','features'),
