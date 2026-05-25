@@ -1,39 +1,36 @@
 # ============================================================
 # WhatsApp CRM Engine — Dockerfile for Hugging Face Spaces
-# Base: Node.js 20 + Chromium (for whatsapp-web.js / Puppeteer)
+# Base: Node.js 20 Bullseye (Debian 11) — stable Chromium support
 # ============================================================
 
-FROM node:20-slim
+FROM node:20-bullseye-slim
 
 # ── System metadata ─────────────────────────────────────────
 LABEL maintainer="WhatsApp CRM OS"
 LABEL description="WhatsApp CRM Engine — HF Spaces Deployment"
 
 # ── Install Chromium + system dependencies for Puppeteer ────
+# Using bullseye (Debian 11) — chromium-sandbox is included in chromium package
 RUN apt-get update && apt-get install -y \
     chromium \
-    chromium-sandbox \
     ca-certificates \
     fonts-liberation \
     fonts-noto-color-emoji \
     libasound2 \
     libatk-bridge2.0-0 \
     libatk1.0-0 \
-    libc6 \
     libcairo2 \
     libcups2 \
     libdbus-1-3 \
     libexpat1 \
     libfontconfig1 \
     libgbm1 \
-    libgcc1 \
     libglib2.0-0 \
     libgtk-3-0 \
     libnspr4 \
     libnss3 \
     libpango-1.0-0 \
     libpangocairo-1.0-0 \
-    libstdc++6 \
     libx11-6 \
     libx11-xcb1 \
     libxcb1 \
@@ -47,7 +44,6 @@ RUN apt-get update && apt-get install -y \
     libxrender1 \
     libxss1 \
     libxtst6 \
-    lsb-release \
     wget \
     xdg-utils \
     --no-install-recommends \
@@ -61,10 +57,8 @@ ENV CHROMIUM_PATH=/usr/bin/chromium
 # ── Create app directory ─────────────────────────────────────
 WORKDIR /app
 
-# ── Create session persistence directory ────────────────────
-RUN mkdir -p /app/wa_session \
-    && mkdir -p /app/logs \
-    && mkdir -p /app/tmp
+# ── Create required directories ─────────────────────────────
+RUN mkdir -p /app/wa_session /app/logs /app/tmp
 
 # ── Copy dependency files first (layer cache optimization) ──
 COPY package*.json ./
